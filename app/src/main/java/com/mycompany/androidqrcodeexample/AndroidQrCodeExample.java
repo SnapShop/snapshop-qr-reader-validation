@@ -1,5 +1,6 @@
 package com.mycompany.androidqrcodeexample;
 
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -148,9 +149,11 @@ public class AndroidQrCodeExample extends Activity  {
         protected void onPostExecute(String result) {
             System.out.println("ValidatePayment.onPostExecute()");
             if (result.equals("true")) {
-                message.setText("PAYMENT SUCCESSFUL! \n Thank you!");
+                message.setText("PAYMENT SUCCESSFUL!");
+                message.setBackgroundColor(getResources().getColor(R.color.green));
             } else {
                 message.setText("PAYMENT UNSUCCESSFUL!");
+                message.setBackgroundColor(getResources().getColor(R.color.red));
             }
         }
     }

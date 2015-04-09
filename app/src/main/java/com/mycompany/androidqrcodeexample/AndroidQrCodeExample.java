@@ -17,6 +17,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
@@ -34,28 +35,23 @@ import java.util.List;
 
 public class AndroidQrCodeExample extends Activity  {
 
-    private final String BASE_URL = "https://smart-store.herokuapp.com";
-
+    private final String BASE_URL = "https://snap-shop.herokuapp.com";
     static final String ACTION_SCAN = "com.google.zxing.client.android.SCAN";
+
+    private TextView message;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //set the main content layout of the Activity
         setContentView(R.layout.activity_main);
+
+        message = (TextView) findViewById(R.id.message);
     }
 
-    //product barcode mode
     public void scanBar(View v) {
-        try {
-            //start the scanning activity from the com.google.zxing.client.android.SCAN intent
-            Intent intent = new Intent(ACTION_SCAN);
-            intent.putExtra("SCAN_MODE", "PRODUCT_MODE");
-            startActivityForResult(intent, 0);
-        } catch (ActivityNotFoundException anfe) {
-            //on catch, show the download dialog
-            showDialog(AndroidQrCodeExample.this, "No Scanner Found", "Download a scanner code activity?", "Yes", "No").show();
-        }
+        ValidatePayment task = new ValidatePayment("ch_15pR6GCm4h5tM32oTqutLjSf");
+        task.execute();
     }
 
     //product qr code mode
@@ -100,9 +96,9 @@ public class AndroidQrCodeExample extends Activity  {
             if (resultCode == RESULT_OK) {
                 //get the extras that are returned from the intent
                 String contents = intent.getStringExtra("SCAN_RESULT");
-                String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
-                Toast toast = Toast.makeText(this, "Content:" + contents + " Format:" + format, Toast.LENGTH_LONG);
-                toast.show();
+
+                ValidatePayment task = new ValidatePayment(contents);
+                task.execute();
             }
         }
     }
@@ -115,18 +111,17 @@ public class AndroidQrCodeExample extends Activity  {
         }
         @Override
         protected String doInBackground(Void... params) {
-            System.out.println("ValidateLoginCredentials.doInBackground()");
+            System.out.println("ValidatePayment.doInBackground()");
             DefaultHttpClient httpClient = new DefaultHttpClient();
-            HttpPost httpPost = new HttpPost(BASE_URL + "/validate");  //pass to /validate
+            HttpPost httpPost = new HttpPost(BASE_URL + "/validate");
 
-            // just pass charge id or what is returned from scanning qr code instead of email and pwd
             try {
                 List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-                urlParameters.add(new BasicNameValuePair("chargeid", chargeid)); //replace "email" with "chargeid"
+                urlParameters.add(new BasicNameValuePair("chargeid", chargeid));
                 httpPost.setEntity(new UrlEncodedFormEntity(urlParameters));
 
                 HttpResponse response = httpClient.execute(httpPost); // sends to server
-                System.out.println("Status line: " + response.getStatusLine()); //prints response (HTTP Status code) you get back from server
+                System.out.println("Status line: " + response.getStatusLine());
 
                 System.out.println("JSON => " + response.getStatusLine().getStatusCode());
 
@@ -141,6 +136,8 @@ public class AndroidQrCodeExample extends Activity  {
                 } else {
                     System.out.println("PAYMENT UNSUCCESSFUL!");
                 }
+
+                return paid;
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -149,7 +146,12 @@ public class AndroidQrCodeExample extends Activity  {
 
         @Override
         protected void onPostExecute(String result) {
-            System.out.println("ValidateLoginCredentials.onPostExecute()");
+            System.out.println("ValidatePayment.onPostExecute()");
+            if (result.equals("true")) {
+                message.setText("PAYMENT SUCCESSFUL! \n Thank you!");
+            } else {
+                message.setText("PAYMENT UNSUCCESSFUL!");
+            }
         }
     }
 }

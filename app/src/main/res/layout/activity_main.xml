@@ -40,4 +40,13 @@ tools:context="com.mycompany.androidqrcodeexample.ActivityOne" >
     android:text="Bar Code"
     android:textSize="18dp" >
 </Button>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Large Text"
+        android:id="@+id/message"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="100dp" />
 </LinearLayout>
